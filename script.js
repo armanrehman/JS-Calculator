@@ -1,16 +1,12 @@
-//MATH FUNCTIONS
-function add(a,b)
-{
+function add(a,b){
     return a+b;
 }
 
-function  multiply(a,b)
-{
+function  multiply(a,b){
     return a * b;
 }
 
-function divide(a,b)
-{
+function divide(a,b){
     if (b==0)
     {
         return "Error: Division by zero is not allowed";
@@ -19,8 +15,7 @@ function divide(a,b)
     return a/b;
 }
 
-function subtract(a,b)
-{
+function subtract(a,b){
     return a-b;
 }
 
@@ -30,30 +25,29 @@ let currentOperator = null
 let waitingForSecondNumber = false;
 let justCalculated = false;
 
-function operate(operater , firstNum , secondNum)
-{
+function operate(operater , firstNum , secondNum){
     //arguements pass to math functions
     let num1 = parseFloat(firstNum);
     let num2 = parseFloat(secondNum);
 
-    if (operater == "+")
-    {
+    if (operater == "+"){
         return add(firstNum,secondNum);
     }
 
-    else if (operater == "-")
-    {
+    else if (operater == "-"){
         return subtract(firstNum,secondNum);
     }
 
-    else if (operater=='/')
-    {
+    else if (operater=='/'){
         return divide(firstNum,secondNum);
     }
 
-    else if (operater=='*')
-    {
+    else if (operater=='*'){
         return multiply(firstNum,secondNum);
+    }
+
+    else if (operater=='%'){
+        return num1 % num2;
     }
 
     else
@@ -64,19 +58,16 @@ function operate(operater , firstNum , secondNum)
 
 
 //control updates for displauy
-function updateDisplay(value)
-{
+function updateDisplay(value){
     let displayElement = document.getElementById("display");
 
-    if (typeof(value)=='number')
-    {
+    if (typeof(value)=='number'){
         let formattedValue = formatNumber(value);
         displayElement.textContent = formattedValue;
         currentDisplay = formattedValue;
     }
 
-    else
-    {
+    else{
         displayElement.textContent = value;
         currentDisplay = value;
     }
@@ -84,23 +75,19 @@ function updateDisplay(value)
 
 
 //current state of display of final answer
-function getCurrentDisplay()
-{
+function getCurrentDisplay(){
     let displayText = currentDisplay;
     let numericValue = parseFloat(displayText);
 
-    if (numericValue == isNaN(numericValue))
-    {
+    if (isNaN(numericValue)){
         return 0;
     }
 
     else return numericValue;
 }
 
-function formatNumber(num)
-{
-    if(num.toString().length > 10)
-    {
+function formatNumber(num){
+    if(num.toString().length > 10){
         return num.toFixed(10).replace(/\.?0+$/,""); //removes trailing zeros
     }
 
@@ -108,17 +95,21 @@ function formatNumber(num)
 }
 
 //input handling
-function handleNumberClick(clickedNumber)
-{
-    if (clickedNumber === 'clear')
-    {
+function handleNumberClick(clickedNumber){
+    if (clickedNumber === 'clear'){
         handleClear();
         return;
     }
 
+    //perventing multiple decimals
+    if (clickedNumber === '.'){
+        if(currentDisplay.toString().includes('.')){
+            return;
+        };
+    }
+
     //starting fresh
-    if (justCalculated == true)
-    {
+    if (justCalculated == true){
         currentDisplay = clickedNumber;
         justCalculated = false;
         waitingForSecondNumber=false;
@@ -127,29 +118,25 @@ function handleNumberClick(clickedNumber)
     }
 
     //starting second num after operator click
-    else if (waitingForSecondNumber==true)
-    {
+    else if (waitingForSecondNumber==true){
         currentDisplay = clickedNumber;
         waitingForSecondNumber=false;
     }
 
     //replacing 0
-    else if (currentDisplay == '0')
-    {
+    else if (currentDisplay == '0' && clickedNumber != '.'){
         currentDisplay = clickedNumber;
     }
 
-    else
     //appending clicked number to appended display
-    {
+    else{
         currentDisplay = currentDisplay.toString() + clickedNumber;
     }
 
     updateDisplay(currentDisplay);
 }
 
-function handleOperatorClick(clickedOperator)
-{
+function handleOperatorClick(clickedOperator){
     let currentNumber = getCurrentDisplay();
 
     if (firstNumber==null){
@@ -159,13 +146,13 @@ function handleOperatorClick(clickedOperator)
         justCalculated=false;
     }
 
-    else if (waitingForSecondNumber == false) //operation carried out
-    {
+     //operation carried out
+    else if (waitingForSecondNumber == false){
         let result = operate(currentOperator,firstNumber,currentNumber);
         updateDisplay(result);
 
-        //continued calculation
-        if (typeof result === 'number') {
+        //chained calculation
+        if (typeof result === 'number'){
             firstNumber = result;
             justCalculated = false;
             waitingForSecondNumber = true;
@@ -173,30 +160,30 @@ function handleOperatorClick(clickedOperator)
         }
     }
 
-    else
-    {
+    //operator replaced
+    else{
         currentOperator=clickedOperator;
     }
 }
 
-function handleEqualClick()
-{
-    if(firstNumber==null || currentDisplay==null)
-    {
+function handleEqualClick(){
+    if(firstNumber==null || currentDisplay==null){
         return;
+    }
+
+    if (waitingForSecondNumber){
+        return; //bug fix
     }
 
     let secondNumber = getCurrentDisplay()
     let result = operate(currentOperator,firstNumber,secondNumber)
 
-    if (typeof result === 'string' && result.includes('Error'))
-    {
+    if (typeof result === 'string' && result.includes('Error')){
         updateDisplay(result);
         resetCalculator();
     }
 
-    else
-    {
+    else{
         updateDisplay(result);
         justCalculated=true;
         waitingForSecondNumber=false;
@@ -214,7 +201,7 @@ function handleClear(){
     updateDisplay("0")
 }
 
-function resetCalculator() {
+function resetCalculator(){
     currentDisplay = "0";
     firstNumber = null;
     currentOperator = null;
@@ -223,13 +210,11 @@ function resetCalculator() {
     updateDisplay("0");
 }
 
-function setupEventListener()
-{
+function setupEventListener(){
     //num buttons setup
     let numberButtons =  document.querySelectorAll('[data-number]');
     numberButtons.forEach(button => {
-        button.addEventListener('click' , () =>
-        {
+        button.addEventListener('click' , () => {
             let clickedNumber = button.getAttribute('data-number');
             handleNumberClick(clickedNumber);
         });
@@ -246,9 +231,97 @@ function setupEventListener()
 
     //equals button setup
     let equalsButton = document.querySelector('[data-equals]');
-    equalsButton.addEventListener('click', () =>{
+    equalsButton.addEventListener('click', () => {
         handleEqualClick();
     });
+
+    let backspaceButton = document.getElementById('backspace');
+            backspaceButton.addEventListener('click', () => {
+                handleBackspace();
+    });
+}
+
+function handleBackspace(){
+    if(justCalculated) return;
+
+    if (typeof currentDisplay === 'string' && currentDisplay.includes('Error')){
+        return;
+    }
+
+    let displayString = currentDisplay.toString();
+    if(displayString.length <= 1 || displayString =='0'){
+        currentDisplay = '0';
+    }
+
+    else currentDisplay = displayString.slice(0, -1); //removing last char
+
+    updateDisplay(currentDisplay);
+}
+
+//function for keyboard support
+function handleKeyPress(event){
+    const key = event.key;
+    if ('0123456789+-*/.='.includes(key) || key === 'Enter' || key === 'Escape' || key === 'Backspace' || key.toLowerCase() === 'c') {
+        event.preventDefault(); //preventing default action
+    }
+
+    if (key >= '0' && key<='9'){
+        handleNumberClick(key);
+        highlightButton(`btn-${key}`);
+    }
+
+    else if (key === '.') {
+        handleNumberClick('.');
+        highlightButton('btn-dot');
+    }
+
+    else if (key === '+') {
+        handleOperatorClick('+');
+        highlightButton('btn-plus');
+    }
+    else if (key === '-') {
+        handleOperatorClick('-');
+        highlightButton('btn-minus');
+    }
+    else if (key === '*') {
+        handleOperatorClick('*');
+        highlightButton('btn-multiply');
+    }
+    else if (key === '/') {
+        handleOperatorClick('/');
+        highlightButton('btn-divide');
+    }
+
+    else if (key === '%') {
+        handleOperatorClick('%');
+        highlightButton('btn-percent');
+    }
+
+    else if (key === '=' || key === 'Enter') {
+        handleEqualClick();
+        highlightButton('btn-equals');
+    }
+
+    else if (key.toLowerCase() === 'c' || key === 'Escape') {
+        handleClear();
+    }
+
+    else if (key === 'Backspace') {
+        handleBackspace();
+        highlightButton('backspace');
+    }
+}
+
+function highlightButton(buttonID)
+{
+    const button = document.getElementById(buttonID);
+    if (button){
+        button.classList.add('pressed');
+        setTimeout(() => {
+            button.classList.remove('pressed');
+        }, 150);
+    }
+
 }
 
 function initialize()
@@ -258,6 +331,7 @@ function initialize()
 }
 
 document.addEventListener('DOMContentLoaded', initialize);
+document.addEventListener('keydown' , handleKeyPress);
 
 
 
